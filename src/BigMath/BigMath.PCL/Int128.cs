@@ -83,7 +83,7 @@ namespace BigMath
             _hi = 0;
             _lo = value;
         }
-
+        
         /// <summary>
         ///     Initializes a new instance of the <see cref="Int128" /> struct.
         /// </summary>
@@ -266,6 +266,22 @@ namespace BigMath
                 Negate();
                 _hi |= NegativeSignMask; // Ensure negative sign.
             }
+        }
+
+        /// <summary>
+        ///     Higher 64 bits.
+        /// </summary>
+        public ulong High
+        {
+            get { return _hi; }
+        }
+
+        /// <summary>
+        ///     Lower 64 bits.
+        /// </summary>
+        public ulong Low
+        {
+            get { return _lo; }
         }
 
         /// <summary>
@@ -497,13 +513,13 @@ namespace BigMath
 
             if (conversionType == typeof (byte[]))
             {
-                value = ToByteArray(asLittleEndian);
+                value = this.ToBytes(asLittleEndian);
                 return true;
             }
 
             if (conversionType == typeof (Guid))
             {
-                value = new Guid(ToByteArray(asLittleEndian));
+                value = new Guid(this.ToBytes(asLittleEndian));
                 return true;
             }
 
@@ -844,18 +860,6 @@ namespace BigMath
             }
 
             throw new ArgumentException();
-        }
-
-        /// <summary>
-        ///     Converts an Int128 value to a byte array.
-        /// </summary>
-        /// <returns>The value of the current Int128 object converted to an array of bytes.</returns>
-        public byte[] ToByteArray(bool asLittleEndian)
-        {
-            var bytes = new byte[16];
-            Buffer.BlockCopy(_lo.ToBytes(asLittleEndian), 0, bytes, asLittleEndian ? 0 : 8, 8);
-            Buffer.BlockCopy(_hi.ToBytes(asLittleEndian), 0, bytes, asLittleEndian ? 8 : 0, 8);
-            return bytes;
         }
 
         /// <summary>

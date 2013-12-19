@@ -11,7 +11,7 @@ namespace BigMath.Utils
 {
     public static class StringUtils
     {
-        public static string ToHexaString(ulong[] values, bool caps, int min)
+        public static string ToHexaString(this ulong[] values, bool caps, int min)
         {
             var sb = new StringBuilder();
             string x = (caps ? "X" : "x") + 16;
@@ -32,7 +32,45 @@ namespace BigMath.Utils
             return value;
         }
 
-        public static byte[] ToByteArray(this string value)
+        /// <summary>
+        ///     Converts array of bytes to hexadecimal string.
+        /// </summary>
+        /// <param name="values">Values.</param>
+        /// <param name="caps">Capitalize chars.</param>
+        /// <param name="min">Minimum string length. Null if there is no minimum length.</param>
+        /// <param name="spaceEveryByte">Space every byte.</param>
+        /// <returns>Hexadecimal string representation of the bytes array.</returns>
+        public static string ToHexaString(this byte[] values, bool caps = true, int? min = null, bool spaceEveryByte = false)
+        {
+            var sb = new StringBuilder();
+            string x = (caps ? "X" : "x") + 2;
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                sb.Append(values[i].ToString(x));
+                if (spaceEveryByte)
+                {
+                    sb.Append(" ");
+                }
+            }
+
+            string value = sb.ToString();
+
+            if (!min.HasValue)
+            {
+                return value;
+            }
+
+            value = value.TrimStart('0');
+            int dif = min.Value - value.Length;
+            if (dif > 0)
+            {
+                value = new string('0', min.Value - value.Length) + value;
+            }
+            return value;
+        }
+
+        public static byte[] ToBytes(this string value)
         {
             byte[] bytes = null;
             if (String.IsNullOrWhiteSpace(value))
@@ -43,7 +81,7 @@ namespace BigMath.Utils
             {
                 int stringLength = value.Length;
                 int characterIndex = (value.StartsWith("0x", StringComparison.Ordinal)) ? 2 : 0;
-                    // Does the string define leading HEX indicator '0x'. Adjust starting index accordingly.               
+                // Does the string define leading HEX indicator '0x'. Adjust starting index accordingly.               
                 int numberOfCharacters = stringLength - characterIndex;
 
                 bool addLeadingZero = false;

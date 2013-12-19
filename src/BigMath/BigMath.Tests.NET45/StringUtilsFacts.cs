@@ -18,7 +18,7 @@ namespace BigMath.Tests
         [TestCaseSource("HexStringToByteArrayTestCases")]
         public byte[] Should_convert_hex_string_to_array_of_bytes(string str)
         {
-            return str.ConvertToByteArray();
+            return str.ToBytes();
         }
 
         private static IEnumerable HexStringToByteArrayTestCases

@@ -292,6 +292,38 @@ namespace BigMath
         }
 
         /// <summary>
+        ///     Higher 64 bits of the higher 128 bits.
+        /// </summary>
+        public ulong A
+        {
+            get { return _a; }
+        }
+
+        /// <summary>
+        ///     Lower 64 bits of the higher 128 bits.
+        /// </summary>
+        public ulong B
+        {
+            get { return _b; }
+        }
+
+        /// <summary>
+        ///     Higher 64 bits of the lower 128 bits.
+        /// </summary>
+        public ulong C
+        {
+            get { return _c; }
+        }
+
+        /// <summary>
+        ///     Lower 64 bits of the lower 128 bits.
+        /// </summary>
+        public ulong D
+        {
+            get { return _d; }
+        }
+
+        /// <summary>
         ///     Gets a number that indicates the sign (negative, positive, or zero) of the current Int256 object.
         /// </summary>
         /// <value>A number that indicates the sign of the Int256 object</value>
@@ -520,13 +552,13 @@ namespace BigMath
 
             if (conversionType == typeof (byte[]))
             {
-                value = ToByteArray(asLittleEndian);
+                value = this.ToBytes(asLittleEndian);
                 return true;
             }
 
             if (conversionType == typeof (Guid))
             {
-                value = new Guid(ToByteArray(asLittleEndian));
+                value = new Guid(this.ToBytes(asLittleEndian));
                 return true;
             }
 
@@ -868,20 +900,6 @@ namespace BigMath
             }
 
             throw new ArgumentException();
-        }
-
-        /// <summary>
-        ///     Converts an Int256 value to a byte array.
-        /// </summary>
-        /// <returns>The value of the current Int256 object converted to an array of bytes.</returns>
-        public byte[] ToByteArray(bool asLittleEndian)
-        {
-            var bytes = new byte[32];
-            Buffer.BlockCopy(_d.ToBytes(asLittleEndian), 0, bytes, asLittleEndian ? 0 : 24, 8);
-            Buffer.BlockCopy(_c.ToBytes(asLittleEndian), 0, bytes, asLittleEndian ? 8 : 16, 8);
-            Buffer.BlockCopy(_b.ToBytes(asLittleEndian), 0, bytes, asLittleEndian ? 16 : 8, 8);
-            Buffer.BlockCopy(_a.ToBytes(asLittleEndian), 0, bytes, asLittleEndian ? 24 : 0, 8);
-            return bytes;
         }
 
         /// <summary>
