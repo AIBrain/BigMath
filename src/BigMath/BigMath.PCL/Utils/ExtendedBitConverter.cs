@@ -32,6 +32,41 @@ namespace BigMath.Utils
         }
 
         /// <summary>
+        ///     Converts <see cref="int" /> to array of bytes.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="buffer">Buffer at least 4 bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="buffer" />.</param>
+        /// <param name="asLittleEndian">Convert to little endian.</param>
+        /// <returns>Array of bytes.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ToBytes(this int value, byte[] buffer, int offset = 0, bool? asLittleEndian = null)
+        {
+            unchecked((uint) value).ToBytes(buffer, offset, asLittleEndian);
+        }
+
+        /// <summary>
+        ///     Converts array of bytes to <see cref="int" />.
+        /// </summary>
+        /// <param name="bytes">An array of bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="bytes" />.</param>
+        /// <param name="asLittleEndian">Convert from little endian.</param>
+        /// <returns><see cref="int" /> value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ToInt32(this byte[] bytes, int offset = 0, bool? asLittleEndian = null)
+        {
+            if (bytes.Length - offset < 4)
+            {
+                throw new ArgumentOutOfRangeException("bytes",
+                    string.Format("Length of bytes array minus offset must NOT be less than 4, actual is {0}.", bytes.Length - offset));
+            }
+
+            return (asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian)
+                ? bytes[offset] | bytes[offset + 1] << 8 | bytes[offset + 2] << 16 | bytes[offset + 3] << 24
+                : bytes[offset] << 24 | bytes[offset + 1] << 16 | bytes[offset + 2] << 8 | bytes[offset + 3];
+        }
+
+        /// <summary>
         ///     Converts <see cref="uint" /> to array of bytes.
         /// </summary>
         /// <param name="value">Value.</param>
@@ -40,46 +75,54 @@ namespace BigMath.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] ToBytes(this uint value, bool? asLittleEndian = null)
         {
-            var bytes = new byte[4];
-            if (asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian)
-            {
-                bytes[0] = (byte) value;
-                bytes[1] = (byte) (value >> 8);
-                bytes[2] = (byte) (value >> 16);
-                bytes[3] = (byte) (value >> 24);
-            }
-            else
-            {
-                bytes[0] = (byte) (value >> 24);
-                bytes[1] = (byte) (value >> 16);
-                bytes[2] = (byte) (value >> 8);
-                bytes[3] = (byte) value;
-            }
-            return bytes;
+            var buffer = new byte[4];
+            value.ToBytes(buffer, 0, asLittleEndian);
+            return buffer;
         }
 
         /// <summary>
-        ///     Converts array of bytes to <see cref="int" />.
+        ///     Converts <see cref="uint" /> to array of bytes.
         /// </summary>
-        /// <param name="bytes">An array of bytes.</param>
-        /// <param name="startIndex">The starting position within <paramref name="bytes" />.</param>
-        /// <param name="asLittleEndian">Convert from little endian.</param>
-        /// <returns><see cref="int" /> value.</returns>
+        /// <param name="value">Value.</param>
+        /// <param name="buffer">Buffer at least 4 bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="buffer" />.</param>
+        /// <param name="asLittleEndian">Convert to little endian.</param>
+        /// <returns>Array of bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ToInt32(this byte[] bytes, int startIndex, bool? asLittleEndian = null)
+        public static void ToBytes(this uint value, byte[] buffer, int offset = 0, bool? asLittleEndian = null)
         {
-            if (bytes.Length - startIndex < 4)
+            if (buffer == null)
             {
-                throw new ArgumentOutOfRangeException("bytes",
-                    string.Format("Length of bytes array minus offset must NOT be less than 4, actual is {0}.", bytes.Length - startIndex));
+                throw new ArgumentNullException("buffer");
             }
 
-            var buffer = new byte[4];
-            Buffer.BlockCopy(bytes, startIndex, buffer, 0, buffer.Length);
+            if (asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian)
+            {
+                buffer[offset] = (byte) value;
+                buffer[offset + 1] = (byte) (value >> 8);
+                buffer[offset + 2] = (byte) (value >> 16);
+                buffer[offset + 3] = (byte) (value >> 24);
+            }
+            else
+            {
+                buffer[offset + 0] = (byte) (value >> 24);
+                buffer[offset + 1] = (byte) (value >> 16);
+                buffer[offset + 2] = (byte) (value >> 8);
+                buffer[offset + 3] = (byte) value;
+            }
+        }
 
-            return (asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian)
-                ? buffer[0] | buffer[1] << 8 | buffer[2] << 16 | buffer[3] << 24
-                : buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3];
+        /// <summary>
+        ///     Converts array of bytes to <see cref="uint" />.
+        /// </summary>
+        /// <param name="bytes">An array of bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="bytes" />.</param>
+        /// <param name="asLittleEndian">Convert from little endian.</param>
+        /// <returns><see cref="uint" /> value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint ToUInt32(this byte[] bytes, int offset = 0, bool? asLittleEndian = null)
+        {
+            return (uint) bytes.ToInt32(offset, asLittleEndian);
         }
 
         /// <summary>
@@ -91,55 +134,66 @@ namespace BigMath.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] ToBytes(this long value, bool? asLittleEndian = null)
         {
-            var bytes = new byte[8];
+            var buffer = new byte[8];
+            value.ToBytes(buffer, 0, asLittleEndian);
+            return buffer;
+        }
+
+        /// <summary>
+        ///     Converts <see cref="long" /> to array of bytes.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="buffer">Buffer at least 8 bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="buffer" />.</param>
+        /// <param name="asLittleEndian">Convert to little endian.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ToBytes(this long value, byte[] buffer, int offset = 0, bool? asLittleEndian = null)
+        {
             if (asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian)
             {
-                bytes[0] = (byte) value;
-                bytes[1] = (byte) (value >> 8);
-                bytes[2] = (byte) (value >> 16);
-                bytes[3] = (byte) (value >> 24);
-                bytes[4] = (byte) (value >> 32);
-                bytes[5] = (byte) (value >> 40);
-                bytes[6] = (byte) (value >> 48);
-                bytes[7] = (byte) (value >> 56);
+                buffer[offset] = (byte) value;
+                buffer[offset + 1] = (byte) (value >> 8);
+                buffer[offset + 2] = (byte) (value >> 16);
+                buffer[offset + 3] = (byte) (value >> 24);
+                buffer[offset + 4] = (byte) (value >> 32);
+                buffer[offset + 5] = (byte) (value >> 40);
+                buffer[offset + 6] = (byte) (value >> 48);
+                buffer[offset + 7] = (byte) (value >> 56);
             }
             else
             {
-                bytes[0] = (byte) (value >> 56);
-                bytes[1] = (byte) (value >> 48);
-                bytes[2] = (byte) (value >> 40);
-                bytes[3] = (byte) (value >> 32);
-                bytes[4] = (byte) (value >> 24);
-                bytes[5] = (byte) (value >> 16);
-                bytes[6] = (byte) (value >> 8);
-                bytes[7] = (byte) value;
+                buffer[offset] = (byte) (value >> 56);
+                buffer[offset + 1] = (byte) (value >> 48);
+                buffer[offset + 2] = (byte) (value >> 40);
+                buffer[offset + 3] = (byte) (value >> 32);
+                buffer[offset + 4] = (byte) (value >> 24);
+                buffer[offset + 5] = (byte) (value >> 16);
+                buffer[offset + 6] = (byte) (value >> 8);
+                buffer[offset + 7] = (byte) value;
             }
-            return bytes;
         }
 
         /// <summary>
         ///     Converts array of bytes to <see cref="long" />.
         /// </summary>
         /// <param name="bytes">An array of bytes. </param>
-        /// <param name="startIndex">The starting position within <paramref name="bytes" />.</param>
+        /// <param name="offset">The starting position within <paramref name="bytes" />.</param>
         /// <param name="asLittleEndian">Convert from little endian.</param>
         /// <returns><see cref="long" /> value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long ToInt64(this byte[] bytes, int startIndex, bool? asLittleEndian = null)
+        public static long ToInt64(this byte[] bytes, int offset, bool? asLittleEndian = null)
         {
-            if (bytes.Length - startIndex < 8)
+            if (bytes.Length - offset < 8)
             {
                 throw new ArgumentOutOfRangeException("bytes",
-                    string.Format("Length of bytes array minus offset must NOT be less than 8, actual is {0}.", bytes.Length - startIndex));
+                    string.Format("Length of bytes array minus offset must NOT be less than 8, actual is {0}.", bytes.Length - offset));
             }
-            var buffer = new byte[8];
-            Buffer.BlockCopy(bytes, startIndex, buffer, 0, buffer.Length);
 
             return (asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian)
-                ? buffer[0] | (long) buffer[1] << 8 | (long) buffer[2] << 16 | (long) buffer[3] << 24 | (long) buffer[4] << 32 | (long) buffer[5] << 40 | (long) buffer[6] << 48 |
-                    (long) buffer[7] << 56
-                : (long) buffer[0] << 56 | (long) buffer[1] << 48 | (long) buffer[2] << 40 | (long) buffer[3] << 32 | (long) buffer[4] << 24 | (long) buffer[5] << 16 |
-                    (long) buffer[6] << 8 | buffer[7];
+                ? bytes[offset] | (long) bytes[offset + 1] << 8 | (long) bytes[offset + 2] << 16 | (long) bytes[offset + 3] << 24 | (long) bytes[offset + 4] << 32 |
+                    (long) bytes[offset + 5] << 40 | (long) bytes[offset + 6] << 48 | (long) bytes[offset + 7] << 56
+                : (long) bytes[offset] << 56 | (long) bytes[offset + 1] << 48 | (long) bytes[offset + 2] << 40 | (long) bytes[offset + 3] << 32 |
+                    (long) bytes[offset + 4] << 24 | (long) bytes[offset + 5] << 16 | (long) bytes[offset + 6] << 8 | bytes[offset + 7];
         }
 
         /// <summary>
@@ -155,16 +209,81 @@ namespace BigMath.Utils
         }
 
         /// <summary>
+        ///     Converts <see cref="ulong" /> to array of bytes.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="buffer">Buffer at least 8 bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="buffer" />.</param>
+        /// <param name="asLittleEndian">Convert to little endian.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ToBytes(this ulong value, byte[] buffer, int offset = 0, bool? asLittleEndian = null)
+        {
+            unchecked((long) value).ToBytes(buffer, offset, asLittleEndian);
+        }
+
+        /// <summary>
         ///     Converts array of bytes to <see cref="ulong" />.
         /// </summary>
-        /// <param name="bytes">An array of bytes. </param>
-        /// <param name="startIndex">The starting position within <paramref name="bytes" />.</param>
+        /// <param name="bytes">An array of bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="bytes" />.</param>
         /// <param name="asLittleEndian">Convert from little endian.</param>
         /// <returns><see cref="ulong" /> value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong ToUInt64(this byte[] bytes, int startIndex, bool? asLittleEndian = null)
+        public static ulong ToUInt64(this byte[] bytes, int offset, bool? asLittleEndian = null)
         {
-            return (ulong) bytes.ToInt64(startIndex, asLittleEndian);
+            return (ulong) bytes.ToInt64(offset, asLittleEndian);
+        }
+
+        /// <summary>
+        ///     Converts an <see cref="Int128" /> value to an array of bytes.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="buffer">An array of bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="buffer" />.</param>
+        /// <param name="asLittleEndian">Convert from little endian.</param>
+        public static void ToBytes(this Int128 value, byte[] buffer, int offset = 0, bool? asLittleEndian = null)
+        {
+            bool ale = asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian;
+            value.Low.ToBytes(buffer, ale ? offset : offset + 8, asLittleEndian);
+            value.High.ToBytes(buffer, ale ? offset + 8 : offset, asLittleEndian);
+        }
+
+        /// <summary>
+        ///     Converts an <see cref="Int128" /> value to a byte array.
+        /// </summary>
+        /// <returns>Array of bytes.</returns>
+        public static byte[] ToBytes(this Int128 value, bool? asLittleEndian)
+        {
+            var buffer = new byte[16];
+            value.ToBytes(buffer, 0, asLittleEndian);
+            return buffer;
+        }
+
+        /// <summary>
+        ///     Converts an <see cref="Int256" /> value to an array of bytes.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="buffer">An array of bytes.</param>
+        /// <param name="offset">The starting position within <paramref name="buffer" />.</param>
+        /// <param name="asLittleEndian">Convert from little endian.</param>
+        public static void ToBytes(this Int256 value, byte[] buffer, int offset = 0, bool? asLittleEndian = null)
+        {
+            bool ale = asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian;
+            value.D.ToBytes(buffer, ale ? offset : offset + 24, asLittleEndian);
+            value.C.ToBytes(buffer, ale ? offset + 8 : offset + 16, asLittleEndian);
+            value.B.ToBytes(buffer, ale ? offset + 16 : offset + 8, asLittleEndian);
+            value.A.ToBytes(buffer, ale ? offset + 24 : offset, asLittleEndian);
+        }
+
+        /// <summary>
+        ///     Converts an <see cref="Int256" /> value to a byte array.
+        /// </summary>
+        /// <returns>Array of bytes.</returns>
+        public static byte[] ToBytes(this Int256 value, bool? asLittleEndian)
+        {
+            var buffer = new byte[32];
+            value.ToBytes(buffer, 0, asLittleEndian);
+            return buffer;
         }
     }
 }
