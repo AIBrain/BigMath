@@ -195,8 +195,11 @@ namespace BigMath
         ///     Initializes a new instance of the <see cref="Int128" /> struct.
         /// </summary>
         /// <param name="value">The value.</param>
-        public Int128(Guid value) : this(value.ToByteArray(), 0, BitConverter.IsLittleEndian)
+        public Int128(Guid value)
         {
+            var int128 = value.ToByteArray().ToInt128(0);
+            _hi = int128.High;
+            _lo = int128.Low;
         }
 
         /// <summary>
@@ -210,29 +213,7 @@ namespace BigMath
             _lo = values[0];
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Int128" /> struct.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="startIndex">Start index.</param>
-        /// <param name="asLittleEndian">As little endian.</param>
-        public Int128(byte[] value, int startIndex, bool asLittleEndian)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            if (value.Length - startIndex < 16)
-            {
-                throw new ArgumentException(null, "value");
-            }
-
-            _hi = value.ToUInt64(asLittleEndian ? startIndex + 8 : startIndex, asLittleEndian);
-            _lo = value.ToUInt64(asLittleEndian ? startIndex : startIndex + 8, asLittleEndian);
-        }
-
-        private Int128(ulong hi, ulong lo)
+        public Int128(ulong hi, ulong lo)
         {
             _hi = hi;
             _lo = lo;
@@ -851,7 +832,7 @@ namespace BigMath
             if ((bytes != null) && (bytes.Length == 16))
             {
                 // TODO: ensure endian.
-                return Compare(left, new Int128(bytes, 0, BitConverter.IsLittleEndian));
+                return Compare(left, bytes.ToInt128(0));
             }
 
             if (right is Guid)

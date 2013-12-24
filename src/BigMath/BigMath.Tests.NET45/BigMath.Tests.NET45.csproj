@@ -49,6 +49,7 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ExtendedBitConverterFacts.cs" />
     <Compile Include="Int256Facts.cs" />
     <Compile Include="Int128Facts.cs" />
     <Compile Include="MathUtilsFacts.cs" />

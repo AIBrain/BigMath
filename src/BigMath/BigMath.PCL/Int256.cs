@@ -211,8 +211,13 @@ namespace BigMath
         ///     Initializes a new instance of the <see cref="Int256" /> struct.
         /// </summary>
         /// <param name="value">The value.</param>
-        public Int256(Guid value) : this(value.ToByteArray(), 0, BitConverter.IsLittleEndian)
+        public Int256(Guid value)
         {
+            var int256 = value.ToByteArray().ToInt256(0);
+            _a = int256.A;
+            _b = int256.B;
+            _c = int256.C;
+            _d = int256.D;
         }
 
         /// <summary>
@@ -227,31 +232,7 @@ namespace BigMath
             _d = values[0];
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Int256" /> struct.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="startIndex">Start index.</param>
-        /// <param name="asLittleEndian">As little endian.</param>
-        public Int256(byte[] value, int startIndex, bool asLittleEndian)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            if (value.Length - startIndex < 32)
-            {
-                throw new ArgumentException(null, "value");
-            }
-
-            _a = value.ToUInt64(asLittleEndian ? startIndex + 24 : startIndex, asLittleEndian);
-            _b = value.ToUInt64(asLittleEndian ? startIndex + 16 : startIndex + 8, asLittleEndian);
-            _c = value.ToUInt64(asLittleEndian ? startIndex + 8 : startIndex + 16, asLittleEndian);
-            _d = value.ToUInt64(asLittleEndian ? startIndex : startIndex + 24, asLittleEndian);
-        }
-
-        private Int256(ulong a, ulong b, ulong c, ulong d)
+        public Int256(ulong a, ulong b, ulong c, ulong d)
         {
             _a = a;
             _b = b;
@@ -891,7 +872,7 @@ namespace BigMath
             if ((bytes != null) && (bytes.Length == 32))
             {
                 // TODO: ensure endian.
-                return Compare(left, new Int256(bytes, 0, BitConverter.IsLittleEndian));
+                return Compare(left, bytes.ToInt256(0));
             }
 
             if (right is Guid)
