@@ -5,6 +5,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,13 +17,24 @@ namespace BigMath
     /// <summary>
     ///     Represents a 256-bit signed integer.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
     public struct Int256 : IComparable<Int256>, IComparable, IEquatable<Int256>, IFormattable
     {
-        [FieldOffset(0)] private ulong _a;
-        [FieldOffset(8)] private ulong _b;
-        [FieldOffset(16)] private ulong _c;
-        [FieldOffset(24)] private ulong _d;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(0)] private ulong _d;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(8)] private ulong _c;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(16)] private ulong _b;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(32)] private ulong _a;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get { return "0x" + ToString("X1"); }
+        }
 
         private const ulong NegativeSignMask = 0x1UL << 63;
 
@@ -105,7 +117,7 @@ namespace BigMath
             {
                 uint[] quotient;
                 uint[] reminder;
-                MathUtils.DivRem(bits, new[] {10U*scale}, out quotient, out reminder);
+                MathUtils.DivModUnsigned(bits, new[] { 10U * scale }, out quotient, out reminder);
 
                 bits = quotient;
             }
@@ -1063,7 +1075,7 @@ namespace BigMath
 
             uint[] quotient;
             uint[] rem;
-            MathUtils.DivRem(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
+            MathUtils.DivModUnsigned(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
             remainder = new Int256(1, rem);
             return new Int256(dividendSign*divisorSign, quotient);
         }

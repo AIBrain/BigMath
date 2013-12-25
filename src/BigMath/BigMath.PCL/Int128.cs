@@ -5,6 +5,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,11 +17,20 @@ namespace BigMath
     /// <summary>
     ///     Represents a 128-bit signed integer.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 16)]
     public struct Int128 : IComparable<Int128>, IComparable, IEquatable<Int128>, IFormattable
     {
-        [FieldOffset(0)] private ulong _hi;
-        [FieldOffset(8)] private ulong _lo;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(0)] private ulong _lo;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(8)] private ulong _hi;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get { return "0x" + ToString("X1"); }
+        }
 
         private const ulong NegativeSignMask = 0x1UL << 63;
 
@@ -97,7 +107,7 @@ namespace BigMath
             {
                 uint[] quotient;
                 uint[] reminder;
-                MathUtils.DivRem(bits, new[] {10U*scale}, out quotient, out reminder);
+                MathUtils.DivModUnsigned(bits, new[] { 10U * scale }, out quotient, out reminder);
 
                 bits = quotient;
             }
@@ -1000,7 +1010,7 @@ namespace BigMath
 
             uint[] quotient;
             uint[] rem;
-            MathUtils.DivRem(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
+            MathUtils.DivModUnsigned(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
             remainder = new Int128(1, rem);
             return new Int128(dividendSign*divisorSign, quotient);
         }
