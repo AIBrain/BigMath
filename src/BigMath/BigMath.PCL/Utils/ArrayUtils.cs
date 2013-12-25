@@ -9,9 +9,9 @@ using System;
 namespace BigMath.Utils
 {
     /// <summary>
-    /// Utils for the <see cref="Array"/> class.
+    ///     Utils for the <see cref="Array" /> class.
     /// </summary>
-    internal static class ArrayUtils
+    public static class ArrayUtils
     {
         /// <summary>
         ///     Converts an array of one type to an array of another type.
@@ -43,6 +43,60 @@ namespace BigMath.Utils
                 outputArray[index] = convert(array[index]);
             }
             return outputArray;
-        } 
+        }
+
+        /// <summary>
+        ///     Get length of serial non zero items.
+        /// </summary>
+        /// <param name="bytes">Array of bytes.</param>
+        /// <param name="asLittleEndian">True - skip all zero items from high. False - skip all zero items from low.</param>
+        /// <returns>Length of serial non zero items.</returns>
+        public static int GetNonZeroLength(this byte[] bytes, bool? asLittleEndian = null)
+        {
+            bool ale = GetIsLittleEndian(asLittleEndian);
+
+            if (ale)
+            {
+                int index = bytes.Length - 1;
+                while ((index >= 0) && (bytes[index] == 0))
+                {
+                    index--;
+                }
+                index = index < 0 ? 0 : index;
+                return index + 1;
+            }
+            else
+            {
+                int index = 0;
+                while ((index < bytes.Length) && (bytes[index] == 0))
+                {
+                    index++;
+                }
+                index = index >= bytes.Length ? bytes.Length - 1 : index;
+                return bytes.Length - index;
+            }
+        }
+
+        /// <summary>
+        ///     Trim zero items.
+        /// </summary>
+        /// <param name="bytes">Array of bytes.</param>
+        /// <param name="asLittleEndian">True - trim from high, False - trim from low.</param>
+        /// <returns>Trimmed array of bytes.</returns>
+        public static byte[] TrimZeros(this byte[] bytes, bool? asLittleEndian = null)
+        {
+            bool ale = GetIsLittleEndian(asLittleEndian);
+
+            int length = GetNonZeroLength(bytes, ale);
+
+            var trimmed = new byte[length];
+            Buffer.BlockCopy(bytes, ale ? 0 : bytes.Length - length, trimmed, 0, length);
+            return trimmed;
+        }
+
+        private static bool GetIsLittleEndian(bool? asLittleEndian)
+        {
+            return asLittleEndian.HasValue ? asLittleEndian.Value : BitConverter.IsLittleEndian;
+        }
     }
 }

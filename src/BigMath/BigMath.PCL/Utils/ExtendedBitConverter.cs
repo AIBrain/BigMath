@@ -186,7 +186,7 @@ namespace BigMath.Utils
         /// <param name="asLittleEndian">Convert from little endian.</param>
         /// <returns><see cref="long" /> value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long ToInt64(this byte[] bytes, int offset, bool? asLittleEndian = null)
+        public static long ToInt64(this byte[] bytes, int offset = 0, bool? asLittleEndian = null)
         {
             if (bytes.Length - offset < 8)
             {
@@ -236,7 +236,7 @@ namespace BigMath.Utils
         /// <param name="asLittleEndian">Convert from little endian.</param>
         /// <returns><see cref="ulong" /> value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong ToUInt64(this byte[] bytes, int offset, bool? asLittleEndian = null)
+        public static ulong ToUInt64(this byte[] bytes, int offset = 0, bool? asLittleEndian = null)
         {
             return (ulong) bytes.ToInt64(offset, asLittleEndian);
         }
@@ -260,11 +260,18 @@ namespace BigMath.Utils
         /// <summary>
         ///     Converts an <see cref="Int128" /> value to a byte array.
         /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="asLittleEndian">Convert from little endian.</param>
+        /// <param name="trimZeros">Trim zero bytes from left or right, depending on endian.</param>
         /// <returns>Array of bytes.</returns>
-        public static byte[] ToBytes(this Int128 value, bool? asLittleEndian = null)
+        public static byte[] ToBytes(this Int128 value, bool? asLittleEndian = null, bool trimZeros = false)
         {
             var buffer = new byte[16];
             value.ToBytes(buffer, 0, asLittleEndian);
+
+            if (trimZeros)
+                buffer = buffer.TrimZeros(asLittleEndian);
+
             return buffer;
         }
 
@@ -275,19 +282,31 @@ namespace BigMath.Utils
         /// <param name="offset">The starting position within <paramref name="bytes" />.</param>
         /// <param name="asLittleEndian">Convert from little endian.</param>
         /// <returns><see cref="Int128" /> value.</returns>
-        public static Int128 ToInt128(this byte[] bytes, int offset, bool? asLittleEndian = null)
+        public static Int128 ToInt128(this byte[] bytes, int offset = 0, bool? asLittleEndian = null)
         {
             if (bytes == null)
             {
                 throw new ArgumentNullException("bytes");
             }
+            if (bytes.Length < offset)
+            {
+                throw new InvalidOperationException("Array length could not be less than offset.");
+            }
 
+            bool ale = GetIsLittleEndian(asLittleEndian);
+
+            byte[] data;
             if (bytes.Length - offset < 16)
             {
-                throw new ArgumentException(null, "bytes");
+                data = new byte[16];
+                Buffer.BlockCopy(bytes, offset, data, ale ? 0 : 16 - (bytes.Length - offset), bytes.Length - offset);
             }
-            bool ale = GetIsLittleEndian(asLittleEndian);
-            return new Int128(bytes.ToUInt64(ale ? offset + 8 : offset, ale), bytes.ToUInt64(ale ? offset : offset + 8, ale));
+            else
+            {
+                data = bytes;
+            }
+
+            return new Int128(data.ToUInt64(ale ? offset + 8 : offset, ale), data.ToUInt64(ale ? offset : offset + 8, ale));
         }
         #endregion
 
@@ -301,7 +320,8 @@ namespace BigMath.Utils
         /// <param name="asLittleEndian">Convert from little endian.</param>
         public static void ToBytes(this Int256 value, byte[] buffer, int offset = 0, bool? asLittleEndian = null)
         {
-            bool ale = asLittleEndian.HasValue ? asLittleEndian.Value : IsLittleEndian;
+            bool ale = GetIsLittleEndian(asLittleEndian);
+
             value.D.ToBytes(buffer, ale ? offset : offset + 24, ale);
             value.C.ToBytes(buffer, ale ? offset + 8 : offset + 16, ale);
             value.B.ToBytes(buffer, ale ? offset + 16 : offset + 8, ale);
@@ -311,11 +331,18 @@ namespace BigMath.Utils
         /// <summary>
         ///     Converts an <see cref="Int256" /> value to a byte array.
         /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="asLittleEndian">Convert from little endian.</param>
+        /// <param name="trimZeros">Trim zero bytes from left or right, depending on endian.</param>
         /// <returns>Array of bytes.</returns>
-        public static byte[] ToBytes(this Int256 value, bool? asLittleEndian)
+        public static byte[] ToBytes(this Int256 value, bool? asLittleEndian = null, bool trimZeros = false)
         {
             var buffer = new byte[32];
             value.ToBytes(buffer, 0, asLittleEndian);
+            
+            if (trimZeros)
+                buffer = buffer.TrimZeros(asLittleEndian);
+
             return buffer;
         }
 
@@ -326,24 +353,35 @@ namespace BigMath.Utils
         /// <param name="offset">The starting position within <paramref name="bytes" />.</param>
         /// <param name="asLittleEndian">Convert from little endian.</param>
         /// <returns><see cref="Int256" /> value.</returns>
-        public static Int256 ToInt256(this byte[] bytes, int offset, bool? asLittleEndian = null)
+        public static Int256 ToInt256(this byte[] bytes, int offset = 0, bool? asLittleEndian = null)
         {
             if (bytes == null)
             {
                 throw new ArgumentNullException("bytes");
             }
 
-            if (bytes.Length - offset < 32)
+            if (bytes.Length < offset)
             {
-                throw new ArgumentException(null, "bytes");
+                throw new InvalidOperationException("Array length could not be less than offset.");
             }
 
             bool ale = GetIsLittleEndian(asLittleEndian);
 
-            ulong a = bytes.ToUInt64(ale ? offset + 24 : offset, ale);
-            ulong b = bytes.ToUInt64(ale ? offset + 16 : offset + 8, ale);
-            ulong c = bytes.ToUInt64(ale ? offset + 8 : offset + 16, ale);
-            ulong d = bytes.ToUInt64(ale ? offset : offset + 24, ale);
+            byte[] data;
+            if (bytes.Length - offset < 32)
+            {
+                data = new byte[32];
+                Buffer.BlockCopy(bytes, offset, data, ale ? 0 : 32 - (bytes.Length - offset), bytes.Length - offset);
+            }
+            else
+            {
+                data = bytes;
+            }
+
+            ulong a = data.ToUInt64(ale ? offset + 24 : offset, ale);
+            ulong b = data.ToUInt64(ale ? offset + 16 : offset + 8, ale);
+            ulong c = data.ToUInt64(ale ? offset + 8 : offset + 16, ale);
+            ulong d = data.ToUInt64(ale ? offset : offset + 24, ale);
 
             return new Int256(a, b, c, d);
         }

@@ -70,9 +70,14 @@ namespace BigMath.Utils
             return value;
         }
 
+        /// <summary>
+        ///     Converts string of hex numbers to array of bytes.
+        /// </summary>
+        /// <param name="value">String value.</param>
+        /// <returns>Array of bytes.</returns>
         public static byte[] ToBytes(this string value)
         {
-            byte[] bytes = null;
+            byte[] bytes;
             if (String.IsNullOrWhiteSpace(value))
             {
                 bytes = new byte[0];
@@ -92,21 +97,27 @@ namespace BigMath.Utils
                     numberOfCharacters += 1; // Leading '0' has been striped from the string presentation.
                 }
 
+                var fromCharToByte = new Func<char, byte>(c =>
+                {
+                    int r = c - 65;
+                    return (byte) (r + 10 + ((r >> 31) & 7));
+                });
+
                 bytes = new byte[numberOfCharacters/2]; // Initialize our byte array to hold the converted string.
 
                 int writeIndex = 0;
                 if (addLeadingZero)
                 {
-                    bytes[writeIndex++] = FromCharacterToByte(value[characterIndex], characterIndex);
+                    bytes[writeIndex++] = fromCharToByte(value[characterIndex]);
                     characterIndex += 1;
                 }
 
-                for (int readIndex = characterIndex; readIndex < value.Length; readIndex += 2)
+                for (; characterIndex < value.Length; characterIndex += 2)
                 {
-                    byte upper = FromCharacterToByte(value[readIndex], readIndex, 4);
-                    byte lower = FromCharacterToByte(value[readIndex + 1], readIndex + 1);
+                    byte upper = fromCharToByte(value[characterIndex]);
+                    byte lower = fromCharToByte(value[characterIndex + 1]);
 
-                    bytes[writeIndex++] = (byte) (upper | lower);
+                    bytes[writeIndex++] = (byte) (upper << 4 | lower);
                 }
             }
 
@@ -118,35 +129,6 @@ namespace BigMath.Utils
             char[] chars = input.ToCharArray();
             Array.Reverse(chars);
             return new String(chars);
-        }
-
-        private static byte FromCharacterToByte(char character, int index, int shift = 0)
-        {
-            var value = (byte) character;
-            if (((0x40 < value) && (0x47 > value)) || ((0x60 < value) && (0x67 > value)))
-            {
-                if (0x40 == (0x40 & value))
-                {
-                    if (0x20 == (0x20 & value))
-                    {
-                        value = (byte) (((value + 0xA) - 0x61) << shift);
-                    }
-                    else
-                    {
-                        value = (byte) (((value + 0xA) - 0x41) << shift);
-                    }
-                }
-            }
-            else if ((0x29 < value) && (0x40 > value))
-            {
-                value = (byte) ((value - 0x30) << shift);
-            }
-            else
-            {
-                throw new InvalidOperationException(String.Format("Character '{0}' at index '{1}' is not valid alphanumeric character.", character, index));
-            }
-
-            return value;
         }
     }
 }
