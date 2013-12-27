@@ -25,9 +25,9 @@ namespace BigMath.Tests
         [TestCase("0x010203040000", "0x010203040000", "0x01020304")]
         public void Should_trim_zeros(string bytesS, string expectedTrimmedBigEndianBytesS, string expectedTrimmedLittleEndianBytesS)
         {
-            byte[] bytes = bytesS.ToBytes();
-            byte[] expectedTrimmedBigEndianBytes = expectedTrimmedBigEndianBytesS.ToBytes();
-            byte[] expectedTrimmedLittleEndianBytes = expectedTrimmedLittleEndianBytesS.ToBytes();
+            byte[] bytes = bytesS.HexToBytes();
+            byte[] expectedTrimmedBigEndianBytes = expectedTrimmedBigEndianBytesS.HexToBytes();
+            byte[] expectedTrimmedLittleEndianBytes = expectedTrimmedLittleEndianBytesS.HexToBytes();
 
             byte[] actualTrimmedBigEndianBytes = bytes.TrimZeros(false);
             byte[] actualTrimmedLittleEndianBytes = bytes.TrimZeros(true);
@@ -42,7 +42,7 @@ namespace BigMath.Tests
             Int128 expectedBigEndian = Int128.Parse(Int128Value);
             Int128 expectedLittleEndian = Int128.Parse(Int128ValueLittleEndian);
 
-            byte[] bytes = Int128Value.ToBytes();
+            byte[] bytes = Int128Value.HexToBytes();
 
             bytes.ToInt128(0, false).Should().Be(expectedBigEndian);
             bytes.ToInt128(0, true).Should().Be(expectedLittleEndian);
@@ -54,7 +54,7 @@ namespace BigMath.Tests
             Int128 expectedBigEndian = Int128.Parse(Int128LessValue);
             Int128 expectedLittleEndian = Int128.Parse(Int128LessValueLittleEndian);
 
-            byte[] bytes = Int128LessValue.ToBytes();
+            byte[] bytes = Int128LessValue.HexToBytes();
 
             Int128 actualBigEndian = bytes.ToInt128(0, false);
             actualBigEndian.Should().Be(expectedBigEndian);
@@ -67,7 +67,7 @@ namespace BigMath.Tests
         public void Should_convert_int128_to_bytes()
         {
             Int128 i = Int128.Parse(Int128Value);
-            byte[] expectedBytes = Int128Value.ToBytes();
+            byte[] expectedBytes = Int128Value.HexToBytes();
 
             byte[] actualBytes = i.ToBytes(false);
             actualBytes.ShouldAllBeEquivalentTo(expectedBytes);

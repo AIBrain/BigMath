@@ -18,7 +18,7 @@ namespace BigMath.Tests
         [TestCaseSource("HexStringToByteArrayTestCases")]
         public byte[] Should_convert_hex_string_to_array_of_bytes(string str)
         {
-            return str.ToBytes();
+            return str.HexToBytes();
         }
 
         private static IEnumerable HexStringToByteArrayTestCases
@@ -39,6 +39,7 @@ namespace BigMath.Tests
                 yield return new HexBytes("0x010203040506070809", Enumerable.Range(1, 9).Select(i => (byte) i).ToArray());
                 yield return new HexBytes("0x0102030405060708090A0B0C0D0E0F", Enumerable.Range(1, 15).Select(i => (byte) i).ToArray());
                 yield return new HexBytes("0x0102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F", Enumerable.Range(1, 31).Select(i => (byte) i).ToArray());
+                yield return new HexBytes("0x102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F", Enumerable.Range(1, 31).Select(i => (byte) i).ToArray());
             }
         }
 

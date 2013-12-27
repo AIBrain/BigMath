@@ -75,7 +75,7 @@ namespace BigMath.Utils
         /// </summary>
         /// <param name="value">String value.</param>
         /// <returns>Array of bytes.</returns>
-        public static byte[] ToBytes(this string value)
+        public static byte[] HexToBytes(this string value)
         {
             byte[] bytes;
             if (String.IsNullOrWhiteSpace(value))
