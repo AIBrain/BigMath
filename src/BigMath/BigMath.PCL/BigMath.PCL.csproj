@@ -39,6 +39,7 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="BigInteger.cs" />
     <Compile Include="Int128.cs" />
     <Compile Include="Int256.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
