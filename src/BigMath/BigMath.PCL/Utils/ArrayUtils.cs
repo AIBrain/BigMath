@@ -5,6 +5,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
 
 namespace BigMath.Utils
 {
@@ -92,6 +93,49 @@ namespace BigMath.Utils
             var trimmed = new byte[length];
             Buffer.BlockCopy(bytes, ale ? 0 : bytes.Length - length, trimmed, 0, length);
             return trimmed;
+        }
+
+        public static byte[] Combine(byte[] first, byte[] second)
+        {
+            var ret = new byte[first.Length + second.Length];
+            Buffer.BlockCopy(first, 0, ret, 0, first.Length);
+            Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
+            return ret;
+        }
+
+        public static byte[] Combine(byte[] first, byte[] second, byte[] third)
+        {
+            var ret = new byte[first.Length + second.Length + third.Length];
+            Buffer.BlockCopy(first, 0, ret, 0, first.Length);
+            Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
+            Buffer.BlockCopy(third, 0, ret, first.Length + second.Length, third.Length);
+            return ret;
+        }
+
+        public static byte[] Combine(params byte[][] arrays)
+        {
+            var ret = new byte[arrays.Sum(x => x.Length)];
+            int offset = 0;
+            foreach (byte[] data in arrays)
+            {
+                Buffer.BlockCopy(data, 0, ret, offset, data.Length);
+                offset += data.Length;
+            }
+            return ret;
+        }
+
+        public static byte[] RewriteWithValue(this byte[] bytes, byte value, int offset, int length)
+        {
+            if (offset + length > bytes.Length)
+            {
+                throw new InvalidOperationException("Offset + length must be less of equal of the bytes length.");
+            }
+            var tbytes = (byte[]) bytes.Clone();
+            for (int i = offset; i < offset + length; i++)
+            {
+                tbytes[i] = value;
+            }
+            return tbytes;
         }
 
         private static bool GetIsLittleEndian(bool? asLittleEndian)
