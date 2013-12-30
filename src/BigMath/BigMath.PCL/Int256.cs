@@ -393,7 +393,7 @@ namespace BigMath
             {
                 formatProvider = CultureInfo.CurrentCulture;
             }
-
+            
             if (!string.IsNullOrEmpty(format))
             {
                 char ch = format[0];
@@ -401,7 +401,7 @@ namespace BigMath
                 {
                     int min;
                     int.TryParse(format.Substring(1).Trim(), out min);
-                    return StringUtils.ToHexaString(ToUIn64Array(), ch == 'X', min);
+                    return this.ToBytes(false).ToHexString(ch == 'X', min, trimZeros: true);
                 }
 
                 if (((ch != 'G') && (ch != 'g')) && ((ch != 'D') && (ch != 'd')))
