@@ -5,6 +5,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,11 +17,20 @@ namespace BigMath
     /// <summary>
     ///     Represents a 128-bit signed integer.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 16)]
     public struct Int128 : IComparable<Int128>, IComparable, IEquatable<Int128>, IFormattable
     {
-        [FieldOffset(0)] private ulong _hi;
-        [FieldOffset(8)] private ulong _lo;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(0)] private ulong _lo;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(8)] private ulong _hi;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get { return "0x" + ToString("X1"); }
+        }
 
         private const ulong NegativeSignMask = 0x1UL << 63;
 
@@ -97,7 +107,7 @@ namespace BigMath
             {
                 uint[] quotient;
                 uint[] reminder;
-                MathUtils.DivRem(bits, new[] {10U*scale}, out quotient, out reminder);
+                MathUtils.DivModUnsigned(bits, new[] { 10U * scale }, out quotient, out reminder);
 
                 bits = quotient;
             }
@@ -195,8 +205,11 @@ namespace BigMath
         ///     Initializes a new instance of the <see cref="Int128" /> struct.
         /// </summary>
         /// <param name="value">The value.</param>
-        public Int128(Guid value) : this(value.ToByteArray(), 0, BitConverter.IsLittleEndian)
+        public Int128(Guid value)
         {
+            var int128 = value.ToByteArray().ToInt128(0);
+            _hi = int128.High;
+            _lo = int128.Low;
         }
 
         /// <summary>
@@ -210,29 +223,7 @@ namespace BigMath
             _lo = values[0];
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Int128" /> struct.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="startIndex">Start index.</param>
-        /// <param name="asLittleEndian">As little endian.</param>
-        public Int128(byte[] value, int startIndex, bool asLittleEndian)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            if (value.Length - startIndex < 16)
-            {
-                throw new ArgumentException(null, "value");
-            }
-
-            _hi = value.ToUInt64(asLittleEndian ? startIndex + 8 : startIndex, asLittleEndian);
-            _lo = value.ToUInt64(asLittleEndian ? startIndex : startIndex + 8, asLittleEndian);
-        }
-
-        private Int128(ulong hi, ulong lo)
+        public Int128(ulong hi, ulong lo)
         {
             _hi = hi;
             _lo = lo;
@@ -369,7 +360,7 @@ namespace BigMath
                 {
                     int min;
                     int.TryParse(format.Substring(1).Trim(), out min);
-                    return StringUtils.ToHexaString(ToUIn64Array(), ch == 'X', min);
+                    return this.ToBytes(false).ToHexString(ch == 'X', min, trimZeros: true);
                 }
 
                 if (((ch != 'G') && (ch != 'g')) && ((ch != 'D') && (ch != 'd')))
@@ -851,7 +842,7 @@ namespace BigMath
             if ((bytes != null) && (bytes.Length == 16))
             {
                 // TODO: ensure endian.
-                return Compare(left, new Int128(bytes, 0, BitConverter.IsLittleEndian));
+                return Compare(left, bytes.ToInt128(0));
             }
 
             if (right is Guid)
@@ -1019,7 +1010,7 @@ namespace BigMath
 
             uint[] quotient;
             uint[] rem;
-            MathUtils.DivRem(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
+            MathUtils.DivModUnsigned(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
             remainder = new Int128(1, rem);
             return new Int128(dividendSign*divisorSign, quotient);
         }

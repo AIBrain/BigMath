@@ -4,6 +4,8 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System;
+
 namespace BigMath.Utils
 {
     /// <summary>
@@ -11,100 +13,7 @@ namespace BigMath.Utils
     /// </summary>
     public static class MathUtils
     {
-        private const ulong HiBit = 0x100000000;
-
-        /// <summary>
-        ///     Divide with reminder.
-        /// </summary>
-        /// <param name="dividend">Dividend.</param>
-        /// <param name="divisor">Divisor.</param>
-        /// <param name="quotient">Quotient.</param>
-        /// <param name="remainder">Reminder.</param>
-        public static void DivRem(uint[] dividend, uint[] divisor, out uint[] quotient, out uint[] remainder)
-        {
-            int divisorLen = GetLength(divisor);
-            int dividendLen = GetLength(dividend);
-            if (divisorLen <= 1)
-            {
-                ulong rem = 0;
-                uint div = divisor[0];
-                quotient = new uint[dividendLen];
-                remainder = new uint[1];
-                for (int i = dividendLen - 1; i >= 0; i--)
-                {
-                    rem *= HiBit;
-                    rem += dividend[i];
-                    ulong q = rem/div;
-                    rem -= q*div;
-                    quotient[i] = (uint) q;
-                }
-                remainder[0] = (uint) rem;
-                return;
-            }
-
-            if (dividendLen >= divisorLen)
-            {
-                int shift = GetNormalizeShift(divisor[divisorLen - 1]);
-                var normDividend = new uint[dividendLen + 1];
-                var normDivisor = new uint[divisorLen];
-                Normalize(dividend, dividendLen, normDividend, shift);
-                Normalize(divisor, divisorLen, normDivisor, shift);
-                quotient = new uint[(dividendLen - divisorLen) + 1];
-                for (int j = dividendLen - divisorLen; j >= 0; j--)
-                {
-                    ulong dx = (HiBit*normDividend[j + divisorLen]) + normDividend[(j + divisorLen) - 1];
-                    ulong qj = dx/normDivisor[divisorLen - 1];
-                    dx -= qj*normDivisor[divisorLen - 1];
-                    do
-                    {
-                        if ((qj < HiBit) && ((qj*normDivisor[divisorLen - 2]) <= ((dx*HiBit) + normDividend[(j + divisorLen) - 2])))
-                        {
-                            break;
-                        }
-
-                        qj -= 1L;
-                        dx += normDivisor[divisorLen - 1];
-                    } while (dx < HiBit);
-
-                    long di = 0;
-                    long dj;
-                    int index = 0;
-                    while (index < divisorLen)
-                    {
-                        ulong dqj = normDivisor[index]*qj;
-                        dj = (normDividend[index + j] - ((uint) dqj)) - di;
-                        normDividend[index + j] = (uint) dj;
-                        dqj = dqj >> 32;
-                        dj = dj >> 32;
-                        di = ((long) dqj) - dj;
-                        index++;
-                    }
-
-                    dj = normDividend[j + divisorLen] - di;
-                    normDividend[j + divisorLen] = (uint) dj;
-                    quotient[j] = (uint) qj;
-
-                    if (dj < 0)
-                    {
-                        quotient[j]--;
-                        ulong sum = 0;
-                        for (index = 0; index < divisorLen; index++)
-                        {
-                            sum = (normDivisor[index] + normDividend[j + index]) + sum;
-                            normDividend[j + index] = (uint) sum;
-                            sum = sum >> 32;
-                        }
-                        sum += normDividend[j + divisorLen];
-                        normDividend[j + divisorLen] = (uint) sum;
-                    }
-                }
-                remainder = Unnormalize(normDividend, shift);
-                return;
-            }
-
-            quotient = new uint[0];
-            remainder = dividend;
-        }
+        private const ulong Base = 0x100000000;
 
         /// <summary>
         ///     Bitwise shift array of <see cref="ulong" />.
@@ -199,6 +108,160 @@ namespace BigMath.Utils
             return shifted;
         }
 
+        public static void GetPrimeMultipliers(this Int128 pq, out Int128 p, out Int128 q)
+        {
+            var pq256 = (Int256) pq;
+            Int256 p256, q256;
+            pq256.GetPrimeMultipliers(out p256, out q256);
+            p = (Int128) p256;
+            q = (Int128) q256;
+        }
+
+        public static void GetPrimeMultipliers(this Int256 pq, out Int256 p, out Int256 q)
+        {
+            p = PollardRho(pq);
+            q = pq/p;
+            if (p > q)
+            {
+                Int256 t = p;
+                p = q;
+                q = t;
+            }
+        }
+
+        public static Int256 PollardRho(Int256 number)
+        {
+            var func = new Func<Int256, Int256, Int256>((param, mod) => ((param*param + 1)%mod));
+
+            Int256 x = 2, y = 2, z;
+            do
+            {
+                x = func(x, number);
+                y = func(func(y, number), number);
+                z = GCD(x > y ? x - y : y - x, number);
+            } while (z <= 1);
+            return z;
+        }
+
+        public static Int128 GCD(this Int128 a, Int128 b)
+        {
+            while (true)
+            {
+                if (b == 0)
+                {
+                    return a;
+                }
+                Int128 a1 = a;
+                a = b;
+                b = a1%b;
+            }
+        }
+
+        public static Int256 GCD(this Int256 a, Int256 b)
+        {
+            while (true)
+            {
+                if (b == 0)
+                {
+                    return a;
+                }
+                Int256 a1 = a;
+                a = b;
+                b = a1%b;
+            }
+        }
+
+        private static int GetNormalizeShift(uint value)
+        {
+            int shift = 0;
+
+            if ((value & 0xFFFF0000) == 0)
+            {
+                value <<= 16;
+                shift += 16;
+            }
+            if ((value & 0xFF000000) == 0)
+            {
+                value <<= 8;
+                shift += 8;
+            }
+            if ((value & 0xF0000000) == 0)
+            {
+                value <<= 4;
+                shift += 4;
+            }
+            if ((value & 0xC0000000) == 0)
+            {
+                value <<= 2;
+                shift += 2;
+            }
+            if ((value & 0x80000000) == 0)
+            {
+                value <<= 1;
+                shift += 1;
+            }
+
+            return shift;
+        }
+
+        private static void Normalize(uint[] u, int l, uint[] un, int shift)
+        {
+            uint carry = 0;
+            int i;
+            if (shift > 0)
+            {
+                int rshift = 32 - shift;
+                for (i = 0; i < l; i++)
+                {
+                    uint ui = u[i];
+                    un[i] = (ui << shift) | carry;
+                    carry = ui >> rshift;
+                }
+            }
+            else
+            {
+                for (i = 0; i < l; i++)
+                {
+                    un[i] = u[i];
+                }
+            }
+
+            while (i < un.Length)
+            {
+                un[i++] = 0;
+            }
+
+            if (carry != 0)
+            {
+                un[l] = carry;
+            }
+        }
+
+        private static void Unnormalize(uint[] un, out uint[] r, int shift)
+        {
+            int length = un.Length;
+            r = new uint[length];
+
+            if (shift > 0)
+            {
+                int lshift = 32 - shift;
+                uint carry = 0;
+                for (int i = length - 1; i >= 0; i--)
+                {
+                    uint uni = un[i];
+                    r[i] = (uni >> shift) | carry;
+                    carry = (uni << lshift);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    r[i] = un[i];
+                }
+            }
+        }
+
         private static int GetLength(uint[] uints)
         {
             int index = uints.Length - 1;
@@ -210,96 +273,126 @@ namespace BigMath.Utils
             return index + 1;
         }
 
-        private static int GetNormalizeShift(uint ui)
+        private static uint[] TrimZeros(uint[] uints)
         {
-            int shift = 0;
-            if ((ui & 0xffff0000) == 0)
-            {
-                ui = ui << 16;
-                shift += 16;
-            }
-
-            if ((ui & 0xff000000) == 0)
-            {
-                ui = ui << 8;
-                shift += 8;
-            }
-
-            if ((ui & 0xf0000000) == 0)
-            {
-                ui = ui << 4;
-                shift += 4;
-            }
-
-            if ((ui & 0xc0000000) == 0)
-            {
-                ui = ui << 2;
-                shift += 2;
-            }
-
-            if ((ui & 0x80000000) == 0)
-            {
-                shift++;
-            }
-            return shift;
+            var trimmed = new uint[GetLength(uints)];
+            Buffer.BlockCopy(uints, 0, trimmed, 0, trimmed.Length*4);
+            return trimmed;
         }
 
-        private static uint[] Unnormalize(uint[] normalized, int shift)
+        public static void DivModUnsigned(uint[] u, uint[] v, out uint[] q, out uint[] r)
         {
-            int len = GetLength(normalized);
-            var unormalized = new uint[len];
-            if (shift > 0)
+            int m = GetLength(u);
+            int n = GetLength(v);
+
+            if (n <= 1)
             {
-                int rshift = 32 - shift;
-                uint r = 0;
-                for (int i = len - 1; i >= 0; i--)
+                //  Divide by single digit
+                //
+                ulong rem = 0;
+                uint v0 = v[0];
+                q = new uint[m];
+                r = new uint[1];
+
+                for (int j = m - 1; j >= 0; j--)
                 {
-                    unormalized[i] = (normalized[i] >> shift) | r;
-                    r = normalized[i] << rshift;
+                    rem *= Base;
+                    rem += u[j];
+
+                    ulong div = rem/v0;
+                    rem -= div*v0;
+                    q[j] = (uint) div;
                 }
+                r[0] = (uint) rem;
+            }
+            else if (m >= n)
+            {
+                int shift = GetNormalizeShift(v[n - 1]);
+
+                var un = new uint[m + 1];
+                var vn = new uint[n];
+
+                Normalize(u, m, un, shift);
+                Normalize(v, n, vn, shift);
+
+                q = new uint[m - n + 1];
+                r = null;
+
+                //  Main division loop
+                //
+                for (int j = m - n; j >= 0; j--)
+                {
+                    ulong rr, qq;
+                    int i;
+
+                    rr = Base*un[j + n] + un[j + n - 1];
+                    qq = rr/vn[n - 1];
+                    rr -= qq*vn[n - 1];
+
+                    for (;;)
+                    {
+                        // Estimate too big ?
+                        //
+                        if ((qq >= Base) || (qq*vn[n - 2] > (rr*Base + un[j + n - 2])))
+                        {
+                            qq--;
+                            rr += vn[n - 1];
+                            if (rr < Base)
+                            {
+                                continue;
+                            }
+                        }
+                        break;
+                    }
+
+
+                    //  Multiply and subtract
+                    //
+                    long b = 0;
+                    long t = 0;
+                    for (i = 0; i < n; i++)
+                    {
+                        ulong p = vn[i]*qq;
+                        t = un[i + j] - (long) (uint) p - b;
+                        un[i + j] = (uint) t;
+                        p >>= 32;
+                        t >>= 32;
+                        b = (long) p - t;
+                    }
+                    t = un[j + n] - b;
+                    un[j + n] = (uint) t;
+
+                    //  Store the calculated value
+                    //
+                    q[j] = (uint) qq;
+
+                    //  Add back vn[0..n] to un[j..j+n]
+                    //
+                    if (t < 0)
+                    {
+                        q[j]--;
+                        ulong c = 0;
+                        for (i = 0; i < n; i++)
+                        {
+                            c = (ulong) vn[i] + un[j + i] + c;
+                            un[j + i] = (uint) c;
+                            c >>= 32;
+                        }
+                        c += un[j + n];
+                        un[j + n] = (uint) c;
+                    }
+                }
+
+                Unnormalize(un, out r, shift);
             }
             else
             {
-                for (int j = 0; j < len; j++)
-                {
-                    unormalized[j] = normalized[j];
-                }
-            }
-            return unormalized;
-        }
-
-        private static void Normalize(uint[] unormalized, int len, uint[] normalized, int shift)
-        {
-            int i;
-            uint n = 0;
-            if (shift > 0)
-            {
-                int rshift = 32 - shift;
-                for (i = 0; i < len; i++)
-                {
-                    normalized[i] = (unormalized[i] << shift) | n;
-                    n = unormalized[i] >> rshift;
-                }
-            }
-            else
-            {
-                i = 0;
-                while (i < len)
-                {
-                    normalized[i] = unormalized[i];
-                    i++;
-                }
+                q = new uint[] {0};
+                r = u;
             }
 
-            while (i < normalized.Length)
-            {
-                normalized[i++] = 0;
-            }
-
-            if (n != 0)
-            {
-                normalized[len] = n;
-            }
+            q = TrimZeros(q);
+            r = TrimZeros(r);
         }
     }
 }

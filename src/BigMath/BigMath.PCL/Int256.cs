@@ -5,6 +5,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,13 +17,24 @@ namespace BigMath
     /// <summary>
     ///     Represents a 256-bit signed integer.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 32)]
     public struct Int256 : IComparable<Int256>, IComparable, IEquatable<Int256>, IFormattable
     {
-        [FieldOffset(0)] private ulong _a;
-        [FieldOffset(8)] private ulong _b;
-        [FieldOffset(16)] private ulong _c;
-        [FieldOffset(24)] private ulong _d;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(0)] private ulong _d;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(8)] private ulong _c;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(16)] private ulong _b;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [FieldOffset(32)] private ulong _a;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get { return "0x" + ToString("X1"); }
+        }
 
         private const ulong NegativeSignMask = 0x1UL << 63;
 
@@ -105,7 +117,7 @@ namespace BigMath
             {
                 uint[] quotient;
                 uint[] reminder;
-                MathUtils.DivRem(bits, new[] {10U*scale}, out quotient, out reminder);
+                MathUtils.DivModUnsigned(bits, new[] { 10U * scale }, out quotient, out reminder);
 
                 bits = quotient;
             }
@@ -211,8 +223,13 @@ namespace BigMath
         ///     Initializes a new instance of the <see cref="Int256" /> struct.
         /// </summary>
         /// <param name="value">The value.</param>
-        public Int256(Guid value) : this(value.ToByteArray(), 0, BitConverter.IsLittleEndian)
+        public Int256(Guid value)
         {
+            var int256 = value.ToByteArray().ToInt256(0);
+            _a = int256.A;
+            _b = int256.B;
+            _c = int256.C;
+            _d = int256.D;
         }
 
         /// <summary>
@@ -227,31 +244,7 @@ namespace BigMath
             _d = values[0];
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Int256" /> struct.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="startIndex">Start index.</param>
-        /// <param name="asLittleEndian">As little endian.</param>
-        public Int256(byte[] value, int startIndex, bool asLittleEndian)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            if (value.Length - startIndex < 32)
-            {
-                throw new ArgumentException(null, "value");
-            }
-
-            _a = value.ToUInt64(asLittleEndian ? startIndex + 24 : startIndex, asLittleEndian);
-            _b = value.ToUInt64(asLittleEndian ? startIndex + 16 : startIndex + 8, asLittleEndian);
-            _c = value.ToUInt64(asLittleEndian ? startIndex + 8 : startIndex + 16, asLittleEndian);
-            _d = value.ToUInt64(asLittleEndian ? startIndex : startIndex + 24, asLittleEndian);
-        }
-
-        private Int256(ulong a, ulong b, ulong c, ulong d)
+        public Int256(ulong a, ulong b, ulong c, ulong d)
         {
             _a = a;
             _b = b;
@@ -400,7 +393,7 @@ namespace BigMath
             {
                 formatProvider = CultureInfo.CurrentCulture;
             }
-
+            
             if (!string.IsNullOrEmpty(format))
             {
                 char ch = format[0];
@@ -408,7 +401,7 @@ namespace BigMath
                 {
                     int min;
                     int.TryParse(format.Substring(1).Trim(), out min);
-                    return StringUtils.ToHexaString(ToUIn64Array(), ch == 'X', min);
+                    return this.ToBytes(false).ToHexString(ch == 'X', min, trimZeros: true);
                 }
 
                 if (((ch != 'G') && (ch != 'g')) && ((ch != 'D') && (ch != 'd')))
@@ -891,7 +884,7 @@ namespace BigMath
             if ((bytes != null) && (bytes.Length == 32))
             {
                 // TODO: ensure endian.
-                return Compare(left, new Int256(bytes, 0, BitConverter.IsLittleEndian));
+                return Compare(left, bytes.ToInt256(0));
             }
 
             if (right is Guid)
@@ -1082,7 +1075,7 @@ namespace BigMath
 
             uint[] quotient;
             uint[] rem;
-            MathUtils.DivRem(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
+            MathUtils.DivModUnsigned(dividend.ToUIn32Array(), divisor.ToUIn32Array(), out quotient, out rem);
             remainder = new Int256(1, rem);
             return new Int256(dividendSign*divisorSign, quotient);
         }
