@@ -50,6 +50,7 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ArrayUtilsFacts.cs" />
+    <Compile Include="Crc32Facts.cs" />
     <Compile Include="ExtendedBitConverterFacts.cs" />
     <Compile Include="Int256Facts.cs" />
     <Compile Include="Int128Facts.cs" />

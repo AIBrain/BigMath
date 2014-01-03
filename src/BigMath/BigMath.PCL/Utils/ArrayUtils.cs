@@ -153,6 +153,17 @@ namespace BigMath.Utils
             return ret;
         }
 
+        public static void Split<T>(this T[] array, int index, out T[] first, out T[] second)
+        {
+            first = array.Take(index).ToArray();
+            second = array.Skip(index).ToArray();
+        }
+
+        public static void SplitMidPoint<T>(this T[] array, out T[] first, out T[] second)
+        {
+            Split(array, array.Length / 2, out first, out second);
+        }
+
         public static byte[] RewriteWithValue(this byte[] bytes, byte value, int offset, int length)
         {
             if (offset + length > bytes.Length)
