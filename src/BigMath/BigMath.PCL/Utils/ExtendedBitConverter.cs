@@ -270,7 +270,9 @@ namespace BigMath.Utils
             value.ToBytes(buffer, 0, asLittleEndian);
 
             if (trimZeros)
+            {
                 buffer = buffer.TrimZeros(asLittleEndian);
+            }
 
             return buffer;
         }
@@ -339,9 +341,11 @@ namespace BigMath.Utils
         {
             var buffer = new byte[32];
             value.ToBytes(buffer, 0, asLittleEndian);
-            
+
             if (trimZeros)
+            {
                 buffer = buffer.TrimZeros(asLittleEndian);
+            }
 
             return buffer;
         }

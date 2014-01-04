@@ -55,7 +55,6 @@ namespace BigMath
             }
         }
 
-        [CLSCompliant(false)]
         public BigInteger(uint value)
         {
             if (value == 0)
@@ -106,7 +105,6 @@ namespace BigMath
             }
         }
 
-        [CLSCompliant(false)]
         public BigInteger(ulong value)
         {
             if (value == 0)
@@ -226,8 +224,7 @@ namespace BigMath
                 _data[2] = (uint) bits[2];
             }
         }
-
-        [CLSCompliant(false)]
+        
         public BigInteger(byte[] value)
         {
             if (value == null)
@@ -443,7 +440,6 @@ namespace BigMath
             return 0;
         }
 
-        [CLSCompliant(false)]
         public static explicit operator uint(BigInteger value)
         {
             if (value._sign == 0)
@@ -467,7 +463,6 @@ namespace BigMath
             return (short) val;
         }
 
-        [CLSCompliant(false)]
         public static explicit operator ushort(BigInteger value)
         {
             var val = (uint) value;
@@ -488,7 +483,6 @@ namespace BigMath
             return (byte) val;
         }
 
-        [CLSCompliant(false)]
         public static explicit operator sbyte(BigInteger value)
         {
             var val = (int) value;
@@ -553,7 +547,6 @@ namespace BigMath
             return result;
         }
 
-        [CLSCompliant(false)]
         public static explicit operator ulong(BigInteger value)
         {
             if (value._sign == 0)
@@ -636,7 +629,6 @@ namespace BigMath
             return new BigInteger(value);
         }
 
-        [CLSCompliant(false)]
         public static implicit operator BigInteger(uint value)
         {
             return new BigInteger(value);
@@ -647,7 +639,6 @@ namespace BigMath
             return new BigInteger(value);
         }
 
-        [CLSCompliant(false)]
         public static implicit operator BigInteger(ushort value)
         {
             return new BigInteger(value);
@@ -658,7 +649,6 @@ namespace BigMath
             return new BigInteger(value);
         }
 
-        [CLSCompliant(false)]
         public static implicit operator BigInteger(sbyte value)
         {
             return new BigInteger(value);
@@ -669,7 +659,6 @@ namespace BigMath
             return new BigInteger(value);
         }
 
-        [CLSCompliant(false)]
         public static implicit operator BigInteger(ulong value)
         {
             return new BigInteger(value);
@@ -1425,13 +1414,11 @@ namespace BigMath
         }
 
 
-        [CLSCompliant(false)]
         public static bool operator <(BigInteger left, ulong right)
         {
             return left.CompareTo(right) < 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator <(ulong left, BigInteger right)
         {
             return right.CompareTo(left) > 0;
@@ -1452,13 +1439,11 @@ namespace BigMath
             return right.CompareTo(left) >= 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator <=(BigInteger left, ulong right)
         {
             return left.CompareTo(right) <= 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator <=(ulong left, BigInteger right)
         {
             return right.CompareTo(left) >= 0;
@@ -1479,13 +1464,11 @@ namespace BigMath
             return right.CompareTo(left) < 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator >(BigInteger left, ulong right)
         {
             return left.CompareTo(right) > 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator >(ulong left, BigInteger right)
         {
             return right.CompareTo(left) < 0;
@@ -1506,13 +1489,11 @@ namespace BigMath
             return right.CompareTo(left) <= 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator >=(BigInteger left, ulong right)
         {
             return left.CompareTo(right) >= 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator >=(ulong left, BigInteger right)
         {
             return right.CompareTo(left) <= 0;
@@ -1533,13 +1514,11 @@ namespace BigMath
             return right.CompareTo(left) == 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator ==(BigInteger left, ulong right)
         {
             return left.CompareTo(right) == 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator ==(ulong left, BigInteger right)
         {
             return right.CompareTo(left) == 0;
@@ -1560,13 +1539,11 @@ namespace BigMath
             return right.CompareTo(left) != 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator !=(BigInteger left, ulong right)
         {
             return left.CompareTo(right) != 0;
         }
 
-        [CLSCompliant(false)]
         public static bool operator !=(ulong left, BigInteger right)
         {
             return right.CompareTo(left) != 0;
@@ -2271,7 +2248,6 @@ namespace BigMath
             return Log(value, 10);
         }
 
-        [CLSCompliant(false)]
         public bool Equals(ulong other)
         {
             return CompareTo(other) == 0;
@@ -2339,7 +2315,6 @@ namespace BigMath
             return Compare(this, other);
         }
 
-        [CLSCompliant(false)]
         public int CompareTo(ulong other)
         {
             if (_sign < 0)
