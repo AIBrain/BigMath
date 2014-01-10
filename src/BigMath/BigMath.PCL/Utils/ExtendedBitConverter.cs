@@ -27,7 +27,7 @@ namespace BigMath.Utils
         /// <param name="asLittleEndian">Convert to little endian.</param>
         /// <returns>Array of bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte[] ToBytes(this int value, bool asLittleEndian)
+        public static byte[] ToBytes(this int value, bool? asLittleEndian = null)
         {
             return unchecked ((uint) value).ToBytes(asLittleEndian);
         }
@@ -270,7 +270,9 @@ namespace BigMath.Utils
             value.ToBytes(buffer, 0, asLittleEndian);
 
             if (trimZeros)
+            {
                 buffer = buffer.TrimZeros(asLittleEndian);
+            }
 
             return buffer;
         }
@@ -339,9 +341,11 @@ namespace BigMath.Utils
         {
             var buffer = new byte[32];
             value.ToBytes(buffer, 0, asLittleEndian);
-            
+
             if (trimZeros)
+            {
                 buffer = buffer.TrimZeros(asLittleEndian);
+            }
 
             return buffer;
         }
