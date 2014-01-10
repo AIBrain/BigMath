@@ -3,7 +3,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>BigMath</id>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <title>BigMath</title>
     <authors>Alexander Logger</authors>
     <owners>Alexander Logger</owners>
@@ -30,5 +30,6 @@
     <file src="tools\init.ps1" target="tools\init.ps1" />
     <file src="tools\install.ps1" target="tools\install.ps1" />
     <file src="tools\uninstall.ps1" target="tools\uninstall.ps1" />
+    <file src="..\BigMath.PCL\**\*.cs" target="src\BigMath.PCL\" />
   </files>
 </package>
