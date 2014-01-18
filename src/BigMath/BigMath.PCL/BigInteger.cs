@@ -2271,7 +2271,7 @@ namespace BigMath
             //			return rbTest;
         }
 
-        internal bool RabinMillerTest(int certainty, Random random)
+        public bool RabinMillerTest(int certainty, Random random)
         {
             Debug.Assert(certainty > 0);
             Debug.Assert(BitLength > 2);
