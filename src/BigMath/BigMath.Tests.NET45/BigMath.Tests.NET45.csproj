@@ -51,6 +51,7 @@
     </Compile>
     <Compile Include="ArrayUtilsFacts.cs" />
     <Compile Include="BigIntegerFacts.cs" />
+    <Compile Include="BigIntegerTest.cs" />
     <Compile Include="Crc32Facts.cs" />
     <Compile Include="ExtendedBitConverterFacts.cs" />
     <Compile Include="Int256Facts.cs" />
