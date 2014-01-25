@@ -7,8 +7,8 @@
     <title>BigMath</title>
     <authors>Alexander Logger</authors>
     <owners>Alexander Logger</owners>
-    <licenseUrl>https://github.com/inTagger/BigMath/blob/master/LICENSE.md</licenseUrl>
-    <projectUrl>https://github.com/inTagger/BigMath</projectUrl>
+    <licenseUrl>https://github.com/Taggersoft/BigMath/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/Taggersoft/BigMath</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Portable class library for computations with big numbers such as Int128, Int256 and BigInteger.
