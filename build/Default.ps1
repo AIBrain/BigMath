@@ -31,7 +31,7 @@ Task Rebuild -depends Clean,Build -description "Rebuilds all artifacts from sour
 
 Task Pack -depends Build -description "Packs to a NuGet package." {
     Write-Host "Creating NuGet packages" -ForegroundColor Green
-    $packages_dir = "$build_dir\packages\$config\"
+    $packages_dir = "$build_dir\output\$config\"
 	if (Test-Path $packages_dir)
 	{	
 		rd $packages_dir -rec -force | out-null
