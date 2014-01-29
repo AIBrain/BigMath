@@ -9,7 +9,10 @@ param(
     [string]$verbosity = "minimal",
     [bool]$alwaysClean = $true
 )
-
+if ($packageVersion -eq $null)
+{
+    $packageVersion = $env:PackageVersion;
+}
 $here = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)";
 $psakePath = Join-Path $here -Child "lib\psake\psake.psm1";
 Import-Module $psakePath;
