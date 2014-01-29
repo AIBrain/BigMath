@@ -41,7 +41,7 @@ Task Pack -depends Build -description "Packs to a NuGet package." {
     
     if (($packageVersion -eq $null) -or ($packageVersion -eq ''))
     {
-        Write-Host "Package version is not set."
+        Write-Host "Package version is not set, hence fetch version from AssemblyVersion attribute from $assembly_info_path."
         $assembly_info_content = Get-Content $assembly_info_path
         $regex = [regex] 'AssemblyVersion\("(?<Version>[0-9]+(?:\.(?:[0-9]+|\*)){1,3})"\)'
         $packageVersion = $regex.Match($assembly_info_content).Groups['Version'].Value

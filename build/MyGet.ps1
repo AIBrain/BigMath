@@ -11,5 +11,6 @@ param(
 )
 
 $here = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)";
-Import-Module psake;
+$psakePath = Join-Path $here -Child "lib\psake\psake.psm1";
+Import-Module $psakePath;
 Invoke-psake "$here/Default.ps1" -properties @{'config'=$config; 'packageVersion'=$packageVersion};
