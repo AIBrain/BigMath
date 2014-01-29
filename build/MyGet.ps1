@@ -9,7 +9,7 @@ param(
     [string]$verbosity = "minimal",
     [bool]$alwaysClean = $true
 )
-if ($packageVersion -eq $null)
+if (!$packageVersion)
 {
     $packageVersion = $env:PackageVersion;
 }

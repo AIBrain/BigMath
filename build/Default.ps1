@@ -39,7 +39,7 @@ Task Pack -depends Build -description "Packs to a NuGet package." {
     }
     mkdir $packages_dir | out-null
     
-    if (($packageVersion -eq $null) -or ($packageVersion -eq ''))
+    if (!$packageVersion)
     {
         Write-Host "Package version is not set, hence fetch version from AssemblyVersion attribute from $assembly_info_path."
         $assembly_info_content = Get-Content $assembly_info_path
