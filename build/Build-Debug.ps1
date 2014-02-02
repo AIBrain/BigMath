@@ -1,2 +1,2 @@
-Import-Module psake;
-Invoke-psake .\Default.ps1 -properties @{'config'='Debug'};
+$here = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)";
+& $here\Build.ps1 -config 'Debug';
