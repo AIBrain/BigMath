@@ -25,4 +25,4 @@ Some parts of the code is based on:
 
 **Bitcoin** address: [1LMhfheXL9bRuYp6TeVCCvCfeEzVLqXJ2x](bitcoin:1LMhfheXL9bRuYp6TeVCCvCfeEzVLqXJ2x?label=BigMath)
 
-![](donate\BigMath-Donate-BTC-1LMhfheXL9bRuYp6TeVCCvCfeEzVLqXJ2x.png)
+![](donate/BigMath-Donate-BTC-1LMhfheXL9bRuYp6TeVCCvCfeEzVLqXJ2x.png)
